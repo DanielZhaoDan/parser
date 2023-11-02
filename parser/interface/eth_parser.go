@@ -2,6 +2,7 @@ package _interface
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"parser/parser/constant"
 	"parser/parser/model"
@@ -68,6 +69,7 @@ func (p ETHParser) GetTransactions(address string) []model.Transaction {
 
 func (p ETHParser) FetchLatestTransaction() error {
 	var param []interface{}
+	var err error
 	var currentBlockResponse vendors.ETHCurrentBlockResponse
 	err, responseBody := vendors.SendRequestToETHServer(vendors.GetCurrentBlockMethod, param)
 	if err != nil {
@@ -89,17 +91,21 @@ func (p ETHParser) FetchLatestTransaction() error {
 	_ = dao.UpdateLatestBlockNumber(currentBlockNumber)
 	parentBlockHash := ""
 
+	var transactionsOfThisBlock []model.Transaction
+	var nextParentBlockHash string
+
 	i := 0
 	for i < BlockNumberSearchLimit {
+		i += 1
 		if currentBlockNumber == "" && parentBlockHash == "" {
 			break
 		}
-		err, transactionsOfThisBlock, nextParentBlockHash := fetchTransactionFromBlock(currentBlockNumber, parentBlockHash)
-
+		err, transactionsOfThisBlock, nextParentBlockHash = fetchTransactionFromBlock(currentBlockNumber, parentBlockHash)
 		// get block request failed, retry with same blockNumber and parentHash
 		if err != nil {
 			continue
 		}
+		log.Printf("store transaction for block. blockNumber: %s, parentHash: %s", currentBlockNumber, nextParentBlockHash)
 		err = dao.Save(transactionsOfThisBlock...)
 
 		// store transaction failed, retry with same blockNumber and parentHash
@@ -111,9 +117,8 @@ func (p ETHParser) FetchLatestTransaction() error {
 		// proceed with parent block hash for next round
 		parentBlockHash = nextParentBlockHash
 		currentBlockNumber = ""
-		i += 1
 	}
-	return nil
+	return err
 }
 
 func fetchTransactionFromBlock(blockNumber string, parentBlockHash string) (error, []model.Transaction, string) {
@@ -138,6 +143,10 @@ func fetchTransactionFromBlock(blockNumber string, parentBlockHash string) (erro
 	if err != nil {
 		log.Printf("fetchLatestTransaction Unmarshal response failed with error: %+v", err)
 		return err, nil, ""
+	}
+	if transactionResponse.Error.Message != "" {
+		log.Printf("fetchLatestTransaction failed with error: %s", transactionResponse.Error.Message)
+		return errors.New(transactionResponse.Error.Message), nil, ""
 	}
 
 	blockTransaction := transactionResponse.Result

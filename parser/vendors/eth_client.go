@@ -32,7 +32,7 @@ type ETHBasicResponse struct {
 }
 
 type Error struct {
-	Code    string `json:"code"`
+	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 
@@ -42,6 +42,7 @@ type ETHCurrentBlockResponse struct {
 }
 
 type ETHBlockTransactionResponse struct {
+	ETHBasicResponse
 	Result ETHBlockTransaction `json:"result"`
 }
 

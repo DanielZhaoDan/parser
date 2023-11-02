@@ -20,7 +20,10 @@ var (
 func main() {
 	dao.Init()
 
-	scheduler.RefreshBlockAndTransaction()
+	err := scheduler.RefreshBlockAndTransaction()
+	if err != nil {
+		log.Fatal("failed to initialize server, error: ", err)
+	}
 
 	// Register the handler function with the default HTTP server
 	http.HandleFunc("/get-current-block", currentBlockHandler)

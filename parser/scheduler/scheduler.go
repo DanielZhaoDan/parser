@@ -15,24 +15,29 @@ var (
 	requestParser _interface.Parser = _interface.ETHParser{}
 )
 
-func RefreshBlockAndTransaction() {
+func RefreshBlockAndTransaction() error {
 	// Create a ticker that ticks every 10 seconds
 	ticker := time.Tick(RefreshBlockIntervalInSecond * time.Second)
 
-	doRefreshBlockAndTransaction()
+	err := doRefreshBlockAndTransaction()
+	if err != nil {
+		return err
+	}
 	// Run the code periodically
 	go func() {
 		for range ticker {
 			doRefreshBlockAndTransaction()
 		}
 	}()
+	return nil
 }
 
-func doRefreshBlockAndTransaction() {
+func doRefreshBlockAndTransaction() error {
 	log.Println("RefreshBlockAndTransaction start")
 	err := requestParser.FetchLatestTransaction()
 	if err != nil {
 		log.Printf("RefrRefreshBlockAndTransaction with error: %v", err)
 	}
 	log.Println("RefreshBlockAndTransaction finish")
+	return err
 }
