@@ -141,6 +141,7 @@ func fetchTransactionFromBlock(blockNumber string, parentBlockHash string) (erro
 	}
 
 	blockTransaction := transactionResponse.Result
+	log.Printf("fetchTransactionFromBlock: blockNumber: %s, blockHash: %s", blockNumber, parentBlockHash)
 	return nil, blockTransaction.Transactions, blockTransaction.ParentHash
 }
 

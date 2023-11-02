@@ -87,7 +87,7 @@ func parseAndSaveTransaction(transaction model.Transaction, address string) {
 		storedTxHash[t.Hash] = true
 	}
 	if _, ok := storedTxHash[transaction.Hash]; !ok {
-		//log.Printf("parseAndSaveTransaction for address: %s", address)
+		// append transaction into tail of list so that transaction from latest node will be retained in front of list
 		addressTransactionsMap[address] = append(addressTransactionsMap[address], transaction)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"parser/parser"
-	"parser/parser/schedulor"
+	"parser/parser/scheduler"
 	"parser/parser/storage"
 )
 
@@ -20,7 +20,7 @@ var (
 func main() {
 	dao.Init()
 
-	schedulor.RefreshBlockAndTransaction()
+	scheduler.RefreshBlockAndTransaction()
 
 	// Register the handler function with the default HTTP server
 	http.HandleFunc("/get-current-block", currentBlockHandler)
